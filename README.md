@@ -2,6 +2,8 @@
 
 A custom-built static site generator written in Python that converts Markdown files into a fully functional static website. This project implements a complete pipeline from Markdown parsing to HTML generation with support for inline formatting, code blocks, lists, quotes, and more.
 
+🌐 **Live Demo:** [https://mamoanwar97.github.io/site-generator/](https://mamoanwar97.github.io/site-generator/)
+
 ## Features
 
 - **Full Markdown Support**
@@ -27,6 +29,11 @@ A custom-built static site generator written in Python that converts Markdown fi
   - Copies CSS, images, and other static files to output directory
   - Maintains directory structure
 
+- **Configurable Base Path**
+  - Deploy to subdirectories or custom paths
+  - Automatically adjusts all URLs for deployment (e.g., GitHub Pages)
+  - Command-line argument for easy configuration
+
 ## Project Structure
 
 ```
@@ -38,7 +45,7 @@ staticSiteGenerator/
 ├── static/            # Static assets (CSS, images)
 │   ├── index.css
 │   └── images/
-├── public/            # Generated HTML output (created by build)
+├── docs/              # Generated HTML output (created by build, used for GitHub Pages)
 ├── src/               # Source code
 │   ├── main.py                  # Entry point
 │   ├── build.py                 # Directory copying utilities
@@ -109,6 +116,14 @@ Generate the static site without serving:
 ```bash
 python3 src/main.py
 ```
+
+**With a custom base path** (e.g., for GitHub Pages or subdirectory deployment):
+
+```bash
+python3 src/main.py /site-generator/
+```
+
+This will prefix all absolute URLs with `/site-generator/`, making the site work correctly when deployed to `https://yourdomain.com/site-generator/`.
 
 ### Run Tests
 
@@ -205,6 +220,62 @@ Edit `template.html` to change the site structure. Use these placeholders:
 
 Edit `static/index.css` to customize the site appearance. Changes will be reflected after rebuilding.
 
+## Deployment
+
+### GitHub Pages
+
+This site is deployed on GitHub Pages and can be accessed at:
+**[https://mamoanwar97.github.io/site-generator/](https://mamoanwar97.github.io/site-generator/)**
+
+#### Deployment Setup
+
+1. **Configure Base Path**
+   
+   Since GitHub Pages serves the site from a subdirectory (`/site-generator/`), we need to specify the base path:
+   
+   ```bash
+   python3 src/main.py /site-generator/
+   ```
+
+2. **Build Output Directory**
+   
+   The generator outputs to the `docs/` directory (configured in `main.py`), which GitHub Pages can serve directly from the repository.
+
+3. **GitHub Pages Configuration**
+   
+   In your GitHub repository settings:
+   - Go to Settings → Pages
+   - Set Source to "Deploy from a branch"
+   - Select branch: `main` (or `master`)
+   - Select folder: `/docs`
+   - Save
+
+4. **Deploy**
+   
+   Simply commit and push the `docs/` directory to your repository:
+   
+   ```bash
+   git add docs/
+   git commit -m "Deploy site"
+   git push origin main
+   ```
+
+#### Updating the Deployed Site
+
+Whenever you update content or make changes:
+
+```bash
+# Build with GitHub Pages base path
+python3 src/main.py /site-generator/
+
+# Commit and push
+git add docs/
+git commit -m "Update site content"
+git push origin main
+```
+
+GitHub Pages will automatically update your site within a few minutes.
+
 ## Testing
 
 The project includes comprehensive unit tests for all major components:
@@ -226,8 +297,8 @@ Run all tests with:
 ### Build Process
 
 1. **Clean and Copy Static Assets**
-   - Delete existing `public/` directory
-   - Copy all files from `static/` to `public/`
+   - Delete existing `docs/` directory (or `public/` if not configured for GitHub Pages)
+   - Copy all files from `static/` to `docs/`
 
 2. **Process Markdown Files**
    - Recursively scan `content/` directory
@@ -236,11 +307,16 @@ Run all tests with:
      - Convert blocks to HTML nodes
      - Extract title from first H1
      - Inject into template
-     - Write HTML to `public/`
+     - Write HTML to `docs/`
 
-3. **Maintain Directory Structure**
-   - Nested folders in `content/` are preserved in `public/`
-   - Example: `content/blog/post.md` → `public/blog/post.html`
+3. **Apply Base Path**
+   - If a base path is provided (e.g., `/site-generator/`), all absolute URLs are prefixed
+   - Example: `/index.css` → `/site-generator/index.css`
+   - This enables deployment to subdirectories
+
+4. **Maintain Directory Structure**
+   - Nested folders in `content/` are preserved in `docs/`
+   - Example: `content/blog/post.md` → `docs/blog/post.html`
 
 ### Markdown to HTML Conversion
 
